@@ -14,19 +14,34 @@ public class DatabaseManager : MonoBehaviour
         dbName = "URI=file:" + 
             Application.persistentDataPath + "/highscores.db";
         CreateDbAndTable("scores");
+        AddHighscore("scores", "PLAYER X", 1000);
     }
 
     void CreateDbAndTable(string tableName)
     {
-//tarkistetaan, että taulun nimessä on vain kirjaimia tai numeroita tai _
+        #region regex
+        //tarkistetaan, että taulun nimessä on vain kirjaimia tai numeroita tai _
         if (!Regex.IsMatch(tableName, @"^[a-zA-Z0-9_]+$"))
         {   //antaa virheilmoituksen unityssä 
             throw new ArgumentException("Invalid table name");
         }
+        #endregion
         string createTableQuery = 
-            $"CREATE TABLE IF NOT EXISTS {tableName} (name TEXT, score INTEGER);";
-        
+            $"CREATE TABLE IF NOT EXISTS {tableName} (name TEXT, score INTEGER);";        
         ExecuteSQL(createTableQuery);
+    }
+
+    void AddHighscore(string tableName, string playerName, int playerScore)
+    {
+        #region regex
+        //tarkistetaan, että taulun nimessä on vain kirjaimia tai numeroita tai _
+        if (!Regex.IsMatch(tableName, @"^[a-zA-Z0-9_]+$"))
+        {   //antaa virheilmoituksen unityssä 
+            throw new ArgumentException("Invalid table name");
+        }
+        #endregion
+        string insertQuery = $"INSERT INTO {tableName} (name, score) VALUES (@name,@score);";
+        ExecuteSQL(insertQuery, ("@name", playerName), ("@score", playerScore));
     }
 
     void ExecuteSQL(string sql, params (string, object)[] parameters)  //0 tai useampi parametri
