@@ -9,8 +9,12 @@ public class DatabaseManager : MonoBehaviour
 {
     string dbName;
 
+    int x = 5;
+    string s = "S";
+
+ 
     private void Awake()
-    {
+    {     
         dbName = "URI=file:" + 
             Application.persistentDataPath + "/highscores.db";
         CreateDbAndTable("scores");
