@@ -4,33 +4,34 @@ using System.Data;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 public class TestSqlite : MonoBehaviour
 {
     string dbName;
-    List<(string name, int score)> highscoreList = new List<(string, int)>();
+    //List<(string name, int score)> highscoreList = new List<(string, int)>();
    
     private void Start()
     {
-                                //Assets-kansio
-        dbName = "URI=file:" + Application.dataPath + "/Sqlite/Highscores.db";
+                                //Assets-kansio Assets/uusi_tietokanta.db
+        dbName = "URI=file:" + Application.dataPath + "/uusi_tietokanta.db";
 
                         //Application.persistentDataPath = k‰ytt‰j‰n profiiliin
         CreateTable();
         //AddHighscore("KALLE", 100);
-        GetHighscores();
+        //GetHighscores();
 
         //LINQ
-        highscoreList = highscoreList.OrderByDescending(x => x.score).ToList();
+        //highscoreList = highscoreList.OrderByDescending(x => x.score).ToList();
 
         //Sort & CompareTo
         //highscoreList.Sort((a, b) => b.score.CompareTo(a.score));
 
         //foreach ( (string name, int score)scoreRow in highscoreList)
-        foreach (var scoreRow in highscoreList)
-        {
-            print(scoreRow);
-        }
+        //foreach (var scoreRow in highscoreList)
+        //{
+        //    print(scoreRow);
+        //}
 
             //Assets-kansio
         // print(Application.dataPath); 
@@ -42,7 +43,8 @@ public class TestSqlite : MonoBehaviour
     }
 
     void CreateTable()
-    {
+    {               
+
         //using var connection = new SqliteConnection(dbName); //uusi tapa
         using (var connection = new SqliteConnection(dbName))
         {
@@ -57,26 +59,27 @@ public class TestSqlite : MonoBehaviour
                 // SELECT-lauseissa "tulisi" k‰ytt‰‰ ExecuteReader()
                 // ExecuteScalar() tulisi k‰ytt‰‰ jos haetaan yksitt‰ist‰ arvoa
             }
-            connection.Close(); //tapa, jota k‰ytet‰‰n muissakin kieliss‰
-                        // suositeltu, (jos ohjelma kaatuu using:in sis‰ll‰)
+           
         }
-
-
-
             
-
 
     } // CreateTable("highscores") //parametriksi luotava taulu
 
     // lis‰‰ yhden highscoren highscores-tauluun
-    void AddHighscore(string playerName, int score)
+    void AddHighscore(string tableName, string playerName, int score)
     {
         using (var connection = new SqliteConnection(dbName))
         {
             connection.Open();
             using(var command = connection.CreateCommand())
             {
-                command.CommandText = "INSERT INTO highscores (name, score) VALUES (@nimi, @pisteet)";
+
+                if (!Regex.IsMatch(tableName, @"^[a-zA-Z0-9_]+$"))
+                {
+                    throw new ArgumentException("Invalid table name");
+                }
+
+                command.CommandText = $"INSERT INTO {tableName} (name, score) VALUES (@nimi, @pisteet)";
                 command.Parameters.AddWithValue("@nimi", playerName);
                 command.Parameters.AddWithValue("@pisteet", score);
                 command.ExecuteNonQuery();
@@ -101,15 +104,12 @@ public class TestSqlite : MonoBehaviour
                     {                        
                         string name = reader["name"].ToString();
                         int score = Convert.ToInt32(reader["score"]);
-                        highscoreList.Add((name, score));
+                        //highscoreList.Add((name, score));
  //highscoreList.Add((reader["name"].ToString(), Convert.ToInt32(reader["score"])));
-                    }
-                    reader.Close();
-                }
-                //command.ExecuteNonQuery();
-
+                    }                   
+                }              
             }
-            connection.Close();
+           
         }
     }
     // LUO LUOKKAAN HIGHSCORE-LISTA (LIST)
